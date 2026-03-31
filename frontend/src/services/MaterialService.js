@@ -206,6 +206,12 @@ class MaterialService {
                               try {
                                         let response = await fetch(materialsPath);
 
+                                        // 如果成功获取材料，更新directoryName为实际的目录名
+                                        if (response.ok) {
+                                                  directoryName = difficulty;
+                                                  console.log(`成功从 ${difficulty} 目录获取材料，更新directoryName为: ${directoryName}`);
+                                        }
+
                                         // 如果找不到完全匹配的目录，尝试其他可能的格式
                                         if (!response.ok && idParts.length >= 3) {
                                                   console.log(`无法从 ${difficulty} 获取材料，尝试其他可能的目录名格式`);

@@ -536,12 +536,21 @@ export default {
       }
     },
     togglePlayback() {
+      if (!this.material.audio_url) {
+        alert('该听力材料暂无音频文件，请联系管理员添加。');
+        return
+      }
+
       if (AudioService.isPlaying) {
         AudioService.pause();
       } else {
         AudioService.play().catch(error => {
           console.error('音频播放失败:', error);
-          alert('音频播放失败，请确保音频文件存在并且格式正确。');
+          if (error.message && error.message.includes('404')) {
+            alert('音频文件不存在，请联系管理员。');
+          } else {
+            alert('音频播放失败，请检查网络连接或稍后再试。');
+          }
         });
       }
     },
