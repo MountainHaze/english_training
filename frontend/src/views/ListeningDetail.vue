@@ -356,8 +356,18 @@ export default {
   },
   computed: {
     allQuestionsAnswered() {
-      return this.userAnswers.length === this.material.questions.length && 
+      if (!this.material || !this.material.questions || !Array.isArray(this.material.questions)) {
+        console.error('material.questions 不存在或不是数组:', this.material)
+        return false
+      }
+      if (!this.userAnswers || !Array.isArray(this.userAnswers)) {
+        console.error('userAnswers 不存在或不是数组:', this.userAnswers)
+        return false
+      }
+      const allAnswered = this.userAnswers.length === this.material.questions.length && 
         !this.userAnswers.includes(undefined)
+      console.log('allQuestionsAnswered:', allAnswered, 'userAnswers:', this.userAnswers, 'questions:', this.material.questions.length)
+      return allAnswered
     }
   },
   async mounted() {
@@ -459,6 +469,16 @@ export default {
     standardizeMaterialData(material) {
       const standardizedMaterial = { ...material }
       
+      // 确保必要的字段存在
+      if (!standardizedMaterial.questions) {
+        console.warn('材料缺少questions字段，使用空数组')
+        standardizedMaterial.questions = []
+      }
+      if (!standardizedMaterial.id) {
+        console.warn('材料缺少id字段')
+        standardizedMaterial.id = 'unknown'
+      }
+      
       // 处理音频URL
       if (!standardizedMaterial.audio_url && standardizedMaterial.audio_file) {
         const difficulty = standardizedMaterial.difficulty || 'CET4'
@@ -466,7 +486,7 @@ export default {
       }
       
       // 处理题目结构
-      if (standardizedMaterial.questions) {
+      if (standardizedMaterial.questions && Array.isArray(standardizedMaterial.questions)) {
         standardizedMaterial.questions = standardizedMaterial.questions.map(q => {
           // 如果问题已经是标准格式，直接返回
           if (typeof q.options === 'object' && Array.isArray(q.options)) {
@@ -562,7 +582,20 @@ export default {
       });
     },
     async submitAnswers() {
+      console.log('submitAnswers 被调用')
+      console.log('material:', this.material)
+      console.log('userAnswers:', this.userAnswers)
+      console.log('allQuestionsAnswered:', this.allQuestionsAnswered)
+      
       if (!this.allQuestionsAnswered) {
+        console.log('所有题目未回答完毕，无法提交')
+        alert('请完成所有题目后再提交答案')
+        return;
+      }
+      
+      if (!this.material.questions || !Array.isArray(this.material.questions)) {
+        console.error('material.questions 不存在或不是数组')
+        alert('材料数据错误，无法提交答案')
         return;
       }
       
